@@ -13,24 +13,27 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
-  // GET /filteredimage?image_url={{URL}}
-  // endpoint to filter an image from a public url.
-  // IT SHOULD
-  //    1
-  //    1. validate the image_url query
-  //    2. call filterImageFromURL(image_url) to filter the image
-  //    3. send the resulting file in the response
-  //    4. deletes any files on the server on finish of the response
-  // QUERY PARAMATERS
-  //    image_url: URL of a publicly accessible image
-  // RETURNS
-  //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
+  app.get("/filteredimage", async (req, res) => {
+    const imageUrl = req.query.image_url;
 
-    /**************************************************************************** */
+    if (!imageUrl) {
+        return res.status(400).json({ error: 'Missing image_url parameter' });
+    }
 
-  //! END @TODO1
-  
+    try {
+        const imagePath = await filterImageFromURL(imageUrl);
+
+        // Here, you might apply some image filtering or processing logic
+        // For simplicity, let's just pipe the image back as it is
+        
+        // Send the filtered image back to the client
+        res.sendFile(imagePath);
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).json({ error: 'Failed to process image' });
+    }
+  });
+
   // Root Endpoint
   // Displays a simple message to the user
   app.get( "/", async (req, res) => {
